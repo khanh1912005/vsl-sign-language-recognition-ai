@@ -1,0 +1,33 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large dataset archives & raw video folders (GitHub 100MB limit)
+dataset.zip
+dataset/*
+!dataset/public_test/
+dataset/public_test/*
+!dataset/public_test/100708.mp4
+!dataset/public_test/101139.mp4
+!dataset/public_test/102593.mp4
+!dataset/public_test/103161.mp4
+!dataset/public_test/103642.mp4
+!dataset/public_test/104666.mp4
+
+# Large precomputed numpy arrays (>100MB GitHub limit)
+processed_data/X_train.npy
+processed_data/X_features.npy
+
+# External tunnel binary (>50MB), Word reports & backup scripts
+cloudflared.exe
+PUBLIC_URL.txt
+*.docx
+generate_final_report_bak.py
+
+# Virtual environments & OS files
+.venv/
+venv/
+env/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,101 @@
+{
+  "architecture": "Spatial-Temporal Conv1D + Unrolled Bidirectional GRU",
+  "input_shape": [
+    30,
+    458
+  ],
+  "total_params": 607844,
+  "trainable_params": 606820,
+  "non_trainable_params": 1024,
+  "epochs_trained": 55,
+  "best_epoch": 47,
+  "train_duration_sec": 312.54,
+  "train_accuracy": 0.9916027784347534,
+  "train_loss": 0.05594347417354584,
+  "val_canonical_top1": 0.8530805706977844,
+  "val_canonical_top5": 0.9549763033175356,
+  "val_canonical_loss": 0.6744653582572937,
+  "val_all_top1": 0.8429319262504578,
+  "test_canonical_top1": 0.8625592589378357,
+  "test_canonical_top5": 0.9478672985781991,
+  "test_canonical_loss": 0.704072117805481,
+  "test_all_top1": 0.8436945080757141,
+  "test_all_top5": 0.9396092362344582,
+  "macro_precision": 0.7662579365079364,
+  "macro_recall": 0.7708571428571429,
+  "macro_f1": 0.7585453011041247,
+  "weighted_precision": 0.8578114421123901,
+  "weighted_recall": 0.8625592417061612,
+  "weighted_f1": 0.851482790279138,
+  "baseline_raw_258": {
+    "val_top1": 0.6564,
+    "test_top1": 0.6991,
+    "test_top5": 0.91
+  },
+  "keras_latency_ms": 52.93,
+  "tflite_size_kb": 2823.37,
+  "tflite_latency_ms": 2.888,
+  "tflite_max_diff": 5.3551048040390015e-09,
+  "top_confused_pairs": [
+    {
+      "true_label": "Biết",
+      "pred_label": "Sốt",
+      "count": 2,
+      "true_total": 7
+    },
+    {
+      "true_label": "Mua",
+      "pred_label": "Sử dụng",
+      "count": 2,
+      "true_total": 4
+    },
+    {
+      "true_label": "Sử dụng",
+      "pred_label": "Thức ăn",
+      "count": 2,
+      "true_total": 7
+    },
+    {
+      "true_label": "Thất lạc",
+      "pred_label": "Áp dụng",
+      "count": 2,
+      "true_total": 3
+    },
+    {
+      "true_label": "Áp dụng",
+      "pred_label": "Nói xấu",
+      "count": 1,
+      "true_total": 8
+    },
+    {
+      "true_label": "Ăn",
+      "pred_label": "Nghe",
+      "count": 1,
+      "true_total": 6
+    },
+    {
+      "true_label": "Bàn tay",
+      "pred_label": "Cứu",
+      "count": 1,
+      "true_total": 1
+    },
+    {
+      "true_label": "Bệnh nhân",
+      "pred_label": "Phỏng vấn",
+      "count": 1,
+      "true_total": 1
+    },
+    {
+      "true_label": "Chào",
+      "pred_label": "Ban ngày",
+      "count": 1,
+      "true_total": 4
+    },
+    {
+      "true_label": "Chân",
+      "pred_label": "Nhà",
+      "count": 1,
+      "true_total": 7
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "users": 1,
+    "requests": 2,
+    "errors": 0,
+    "success_rate": 100.0,
+    "throughput_rps": 45.9,
+    "wall_ms": 43.5,
+    "e2e_p50_ms": 21.2,
+    "e2e_p95_ms": 29.9,
+    "tflite_avg_ms": 6.03,
+    "accuracy": 50.0
+  },
+  {
+    "users": 10,
+    "requests": 20,
+    "errors": 0,
+    "success_rate": 100.0,
+    "throughput_rps": 103.7,
+    "wall_ms": 192.8,
+    "e2e_p50_ms": 68.2,
+    "e2e_p95_ms": 87.8,
+    "tflite_avg_ms": 6.91,
+    "accuracy": 75.0
+  },
+  {
+    "users": 25,
+    "requests": 50,
+    "errors": 0,
+    "success_rate": 100.0,
+    "throughput_rps": 128.7,
+    "wall_ms": 388.6,
+    "e2e_p50_ms": 104.2,
+    "e2e_p95_ms": 134.9,
+    "tflite_avg_ms": 6.08,
+    "accuracy": 82.0
+  },
+  {
+    "users": 50,
+    "requests": 100,
+    "errors": 0,
+    "success_rate": 100.0,
+    "throughput_rps": 116.3,
+    "wall_ms": 859.6,
+    "e2e_p50_ms": 185.3,
+    "e2e_p95_ms": 317.5,
+    "tflite_avg_ms": 6.81,
+    "accuracy": 82.0
+  },
+  {
+    "users": 100,
+    "requests": 200,
+    "errors": 0,
+    "success_rate": 100.0,
+    "throughput_rps": 124.4,
+    "wall_ms": 1608.0,
+    "e2e_p50_ms": 263.9,
+    "e2e_p95_ms": 396.5,
+    "tflite_avg_ms": 7.26,
+    "accuracy": 83.0
+  }
+]

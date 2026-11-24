@@ -1,0 +1,82 @@
+{
+  "with_pause": {
+    "num_sequences": 100,
+    "total_words": 350,
+    "word_error_rate": 0.16,
+    "word_recognition_accuracy": 0.84,
+    "exact_sentence_accuracy": 0.5,
+    "avg_decode_time_ms": 12.01,
+    "examples": [
+      {
+        "ground_truth": "Thăm -> Khai báo -> Phạt",
+        "predicted": "Thăm -> Khai báo -> Phạt",
+        "word_edits": 0,
+        "exact_match": true
+      },
+      {
+        "ground_truth": "Rau -> Bế mạc -> Chào",
+        "predicted": "Rau -> Bế mạc -> Chào",
+        "word_edits": 0,
+        "exact_match": true
+      },
+      {
+        "ground_truth": "Rẽ trái -> Nặng -> Thức ăn -> Sử dụng",
+        "predicted": "Rẽ trái -> Nặng -> Cá -> Sử dụng",
+        "word_edits": 1,
+        "exact_match": false
+      },
+      {
+        "ground_truth": "Giúp -> Thức ăn -> Cần -> Xuất viện",
+        "predicted": "Giúp -> Thức ăn -> Cần -> Xuất viện",
+        "word_edits": 0,
+        "exact_match": true
+      },
+      {
+        "ground_truth": "Khóc -> Khai báo -> Bế mạc -> Chấp nhận",
+        "predicted": "Khóc -> Khai báo -> Bế mạc -> Kết hôn",
+        "word_edits": 1,
+        "exact_match": false
+      }
+    ]
+  },
+  "continuous_no_pause": {
+    "num_sequences": 100,
+    "total_words": 357,
+    "word_error_rate": 0.2101,
+    "word_recognition_accuracy": 0.7899,
+    "exact_sentence_accuracy": 0.46,
+    "avg_decode_time_ms": 12.41,
+    "examples": [
+      {
+        "ground_truth": "Biếu tặng -> Cám dỗ -> Nói xấu -> Cám dỗ",
+        "predicted": "Biếu tặng -> Cám dỗ -> Nói xấu -> Cám dỗ",
+        "word_edits": 0,
+        "exact_match": true
+      },
+      {
+        "ground_truth": "Khu cách ly -> Phỏng vấn -> Nghe",
+        "predicted": "Khu cách ly -> Phỏng vấn -> Nghe",
+        "word_edits": 0,
+        "exact_match": true
+      },
+      {
+        "ground_truth": "Chạy -> Nghe -> Thức ăn -> Mời vào",
+        "predicted": "Chạy -> Nghe -> Thức ăn -> Mời vào",
+        "word_edits": 0,
+        "exact_match": true
+      },
+      {
+        "ground_truth": "Rẽ trái -> Biết -> Thức ăn -> Biết",
+        "predicted": "Rẽ trái -> Chậm lại -> Sốt",
+        "word_edits": 3,
+        "exact_match": false
+      },
+      {
+        "ground_truth": "Xuất viện -> Hy sinh -> Chào -> Thăm",
+        "predicted": "Xuất viện -> Ăn mừng -> Chậm lại -> Cho",
+        "word_edits": 3,
+        "exact_match": false
+      }
+    ]
+  }
+}

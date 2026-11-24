@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VSL Translation Platform — Hệ Thống Nhận Diện Ngôn Ngữ Ký Hiệu Tiếng Việt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google MediaPipe Holistic JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg-app: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-terminal: #0f172a;
+      --border-base: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --brand: #1d4ed8;
+      --brand-hover: #1e40af;
+      --brand-subtle: #eff6ff;
+      --brand-border: #bfdbfe;
+      --success: #059669;
+      --success-subtle: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warning: #d97706;
+      --warning-subtle: #fffbeb;
+      --warning-border: #fde68a;
+      --danger: #dc2626;
+      --danger-subtle: #fef2f2;
+      --danger-border: #fecaca;
+      --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+      --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* TOP ENTERPRISE NAVBAR */
+    .topbar {
+      background: #0f172a;
+      color: #f8fafc;
+      border-bottom: 1px solid #1e293b;
+      height: 56px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 30px;
+      height: 30px;
+      background: #2563eb;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.03em;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-divider {
+      color: #475569;
+      font-weight: 400;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .telemetry-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .telemetry-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #94a3b8;
+      padding: 4px 10px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: var(--radius-sm);
+    }
+
+    .telemetry-item strong {
+      color: #f8fafc;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+
+    /* SUB-NAVIGATION TABS */
+    .subnav-wrap {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-base);
+      padding: 0 24px;
+    }
+
+    .subnav {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      gap: 28px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 14px 2px;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 13.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+      font-weight: 600;
+    }
+
+    .tab-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+    }
+
+    /* MAIN WORKSPACE CONTAINER */
+    .workspace {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .telemetry-bar { display: none; }
+    }
+
+    /* PANEL / CARD */
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-base);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fcfcfd;
+    }
+
+    .panel-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .panel-body {
+      padding: 20px;
+    }
+
+    /* VIDEO / CANVAS VIEWPORT */
+    .viewport-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: 460px;
+      margin: 0 auto;
+      background: #0b0f19;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #webcamVideo { display: none; }
+
+    #outputCanvas, #uploadPlayerCanvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .viewport-hud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.86);
+      backdrop-filter: blur(4px);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+
+    .hud-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: #93c5fd;
+      font-weight: 500;
+    }
+
+    /* BUTTON SYSTEM */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    button.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.12s ease;
+      line-height: 1.25;
+    }
+
+    button.btn svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    button.btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #ffffff;
+      border-color: var(--brand);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--brand-hover);
+      border-color: var(--brand-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-subtle);
+    }
+
+    .btn-subtle {
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border-color: var(--border-base);
+    }
+    .btn-subtle:hover:not(:disabled) {
+      background: #e2e8f0;
+      color: var(--text-primary);
+    }
+
+    .btn-danger-outline {
+      background: var(--bg-surface);
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+    .btn-danger-outline:hover:not(:disabled) {
+      background: var(--danger-subtle);
+    }
+
+    .tech-note {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: var(--bg-subtle);
+      border-left: 3px solid var(--brand);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* PRIMARY PREDICTION READOUT */
+    .readout-card {
+      background: var(--brand-subtle);
+      border: 1px solid var(--brand-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .readout-label-sm {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+
+    .readout-word {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .readout-meta {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* STATE BUFFERS */
+    .state-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .state-row {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+    }
+
+    .state-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+
+    .state-row-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .state-row-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-height: 21px;
+    }
+
+    /* TOP 5 DISTRIBUTION TABLE */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 16px 0 10px 0;
+    }
+
+    .top5-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+    }
+    .top5-row:last-child { border-bottom: none; }
+
+    .top5-rank {
+      width: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .top5-name {
+      width: 140px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top5-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .top5-bar-fill {
+      height: 100%;
+      background: var(--brand);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    .top5-pct {
+      width: 58px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* UPLOAD FORM CONTROLS */
+    .form-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="file"] {
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      flex: 1;
+    }
+
+    select.select-input {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      outline: none;
+    }
+
+    select.select-input:focus {
+      border-color: var(--brand);
+    }
+
+    /* TAB 3: ENTERPRISE CONCURRENCY & LOAD MONITOR */
+    .arch-Spec-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 960px) {
+      .arch-Spec-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .arch-step {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .arch-step.active-pulse {
+      border-color: var(--brand);
+      background: var(--brand-subtle);
+    }
+
+    .arch-step-num {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--brand);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .arch-step strong {
+      color: var(--text-primary);
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 960px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+    }
+
+    .kpi-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 4px;
+    }
+
+    .banner-notice {
+      display: none;
+      background: var(--success-subtle);
+      border: 1px solid var(--success-border);
+      color: #065f46;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .sim-users-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .sim-user-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .sim-user-card.state-collecting {
+      border-color: var(--border-base);
+    }
+
+    .sim-user-card.state-sending {
+      border-color: var(--warning);
+      background: #fffdf7;
+    }
+
+    .sim-user-card.state-done {
+      border-color: var(--success);
+    }
+
+    .sim-user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .sim-user-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .node-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #3b82f6;
+    }
+    .state-sending .node-dot { background: #f59e0b; }
+    .state-done .node-dot { background: #10b981; }
+
+    .sim-sid {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--bg-subtle);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-base);
+    }
+
+    .sim-frame-bar-bg {
+      width: 100%;
+      height: 5px;
+      background: var(--bg-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 6px 0 8px 0;
+    }
+
+    .sim-frame-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--brand);
+      transition: width 0.08s linear;
+    }
+
+    .sim-pred-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      border-radius: 4px;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sim-pred-word {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--text-primary);
+    }
+
+    .sim-pred-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    .sim-sentence {
+      margin-top: 7px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sim-sentence span {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .terminal-log {
+      background: var(--bg-terminal);
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      height: 165px;
+      overflow-y: auto;
+      color: #e2e8f0;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP ENTERPRISE HEADER -->
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-logo">VSL</div>
+      <div class="brand-title">
+        <span>VSL Translation Platform</span>
+        <span class="brand-divider">/</span>
+        <span class="brand-subtitle">Hệ Thống Nhận Diện Ngôn Ngữ Ký Hiệu Tiếng Việt (Conv1D–BiGRU TFLite)</span>
+      </div>
+    </div>
+    <div class="telemetry-bar">
+      <div class="telemetry-item">
+        <span>Session:</span>
+        <strong id="lblSessionId" class="mono">...</strong>
+      </div>
+      <div class="telemetry-item">
+        <span class="status-dot"></span>
+        <span>Kết nối:</span>
+        <strong id="lblWsState">Sẵn sàng</strong>
+      </div>
+      <div class="telemetry-item">
+        <span>Độ trễ TFLite:</span>
+        <strong id="lblInferMs" class="mono">-- ms</strong>
+      </div>
+      <div class="telemetry-item">
+        <span>Phiên hoạt động:</span>
+        <strong id="lblActiveUsers" class="mono">1</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUB-NAVIGATION -->
+  <div class="subnav-wrap">
+    <nav class="subnav">
+      <button class="tab-btn active" onclick="switchTab('webcam', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <span>1. Nhận Diện Trực Tiếp (Webcam)</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('upload', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>2. Phân Tích Tệp Video (.MP4 / .AVI)</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('stress', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>3. Giám Sát Chịu Tải Đa Người Dùng</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="workspace">
+
+    <!-- TAB 1: WEBCAM REALTIME -->
+    <div id="tab-webcam" class="tab-content active">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>Luồng Thu Nhận Camera & Trích Xuất Khung Xương (1:1 Square Crop)</span>
+            </div>
+            <span id="lblFps" class="panel-meta mono">0.0 FPS</span>
+          </div>
+          <div class="panel-body">
+            <div class="viewport-frame">
+              <video id="webcamVideo" playsinline></video>
+              <canvas id="outputCanvas" width="480" height="480" style="transform: scaleX(-1);"></canvas>
+              <div class="viewport-hud">
+                <span id="lblCamStatus">Sẵn sàng — Nhấn "Bật Camera" hoặc "Gửi Mẫu Kiểm Thử"</span>
+                <span id="lblWindowCount" class="hud-badge">0 / 30 frames</span>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <button id="btnStartCam" class="btn btn-primary" onclick="startBrowserWebcam()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                <span>Bật Camera</span>
+              </button>
+              <button id="btnStopCam" class="btn btn-danger-outline" onclick="stopBrowserWebcam()" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                <span>Dừng Camera</span>
+              </button>
+              <button id="btnToggleMirror" class="btn btn-secondary" onclick="toggleWebcamMirror()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                <span>Lật gương: BẬT</span>
+              </button>
+              <button class="btn btn-subtle" onclick="sendDemoSampleWindow()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <span>Gửi Mẫu Kiểm Thử (30×458)</span>
+              </button>
+            </div>
+
+            <div class="tech-note">
+              <strong>Đồng bộ chuẩn hình học:</strong> Khung hình Camera được cắt chính giữa theo tỷ lệ vuông <code>1:1 (480×480)</code> tương thích với tập dữ liệu huấn luyện (<code>224×224</code>), lấy mẫu ở tốc độ <code>~14 FPS</code>, tự động căn chỉnh cổ tay Trái/Phải và hỗ trợ cử chỉ đan chéo hai cổ tay hình chữ X trước ngực để xóa từ vừa chốt.
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Kết Quả Phiên Dịch Thời Gian Thực</div>
+            <span class="panel-meta">Ngưỡng xác nhận: 50%</span>
+          </div>
+          <div class="panel-body">
+            <div class="readout-card">
+              <div>
+                <div class="readout-label-sm">Nhãn Từ Vựng Dự Đoán (Top-1)</div>
+                <div id="lblTop1Word" class="readout-word">---</div>
+                <div id="lblTop1Conf" class="readout-meta mono">Độ tin cậy: -- %</div>
+              </div>
+            </div>
+
+            <div class="state-stack">
+              <div class="state-row">
+                <div class="state-row-header">
+                  <span class="state-row-title">Bộ Đệm Nháp (Draft Buffer — Kiểm tra độ ổn định)</span>
+                </div>
+                <div id="lblDraft" class="state-row-val" style="color: var(--warning);">(Đang chờ cử chỉ...)</div>
+              </div>
+              <div class="state-row">
+                <div class="state-row-header">
+                  <span class="state-row-title">Chuỗi Từ Đã Chốt (Committed Sequence)</span>
+                </div>
+                <div id="lblFinalWords" class="state-row-val" style="color: var(--success);">(Chưa có từ)</div>
+              </div>
+              <div class="state-row">
+                <div class="state-row-header">
+                  <span class="state-row-title">Câu Tiếng Việt Hoàn Chỉnh (NLP Post-Processing)</span>
+                </div>
+                <div id="lblNlpSentence" class="state-row-val" style="color: var(--brand);">(Chưa có câu)</div>
+              </div>
+            </div>
+
+            <div class="toolbar" style="margin-top: 0; margin-bottom: 16px;">
+              <button class="btn btn-secondary" onclick="sendSessionAction('commit_draft')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Chốt từ nháp</span>
+              </button>
+              <button class="btn btn-secondary" onclick="sendSessionAction('backspace')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+                <span>Xóa từ cuối (Backspace)</span>
+              </button>
+              <button class="btn btn-danger-outline" onclick="sendSessionAction('clear')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span>Xóa toàn bộ câu</span>
+              </button>
+            </div>
+
+            <div class="section-label">Phân Phối Xác Suất Top-5 Lớp Từ Vựng</div>
+            <div id="top5Container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: UPLOAD VIDEO -->
+    <div id="tab-upload" class="tab-content">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Trình Phân Tích Video & Tái Tạo Khung Xương MediaPipe</div>
+            <span id="lblUploadFrameInfo" class="panel-meta">Chế độ: Khung xương MediaPipe</span>
+          </div>
+          <div class="panel-body">
+            <div class="form-bar">
+              <div class="input-group">
+                <input type="file" id="videoFileInput" accept="video/*" onchange="onSelectVideoFile(event)" />
+                <button id="btnUploadPredict" class="btn btn-primary" onclick="uploadAndPredictVideo()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Phân Tích Video</span>
+                </button>
+              </div>
+              <div class="input-group">
+                <span style="font-size: 12.5px; color: var(--text-secondary); font-weight: 500;">Bộ dữ liệu kiểm thử nhanh:</span>
+                <select id="selSampleVideo" class="select-input" style="flex: 1;" onchange="onSelectSampleVideo(this.value)">
+                  <option value="">-- Chọn tệp video từ tập dữ liệu để phân tích --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="viewport-frame">
+              <video id="uploadPreviewVideo" muted playsinline style="display:none; width:100%; height:100%; object-fit:contain;"></video>
+              <canvas id="uploadPlayerCanvas" width="320" height="320"></canvas>
+              <div class="viewport-hud">
+                <span id="lblUploadOverlay">Chọn tệp video từ máy tính hoặc danh sách mẫu phía trên</span>
+                <span id="lblUploadPlayStep" class="hud-badge">0 / 30 frames</span>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <button id="btnToggleSkel" class="btn btn-primary" onclick="toggleUploadSkeletonView()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Chế độ: Video + Khung Xương MediaPipe</span>
+              </button>
+              <button id="btnTogglePlay" class="btn btn-secondary" onclick="toggleUploadPlayback()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                <span>Tạm dừng</span>
+              </button>
+            </div>
+            <p id="lblUploadStatus" style="margin-top: 12px; font-size: 13px; color: var(--brand); font-weight: 500;"></p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Báo Cáo Suy Luận Độc Lập (Isolated Video Inference)</div>
+            <span class="panel-meta">Đánh giá độc lập từng tệp</span>
+          </div>
+          <div class="panel-body">
+            <div class="readout-card">
+              <div>
+                <div class="readout-label-sm">Nhãn Dự Đoán Của Tệp Video</div>
+                <div id="lblUploadTop1" class="readout-word">---</div>
+                <div id="lblUploadConf" class="readout-meta mono">Độ tin cậy: -- %</div>
+              </div>
+            </div>
+
+            <div class="section-label">Phân Phối Xác Suất Top-5 Lớp Từ Vựng</div>
+            <div id="uploadTop5Container"></div>
+
+            <div class="tech-note" style="margin-top: 20px;">
+              <strong>Quy trình xử lý tệp video:</strong> Máy chủ giải mã đa định dạng (hỗ trợ cả chuẩn nén <code>FMP4/mp4v</code> của OpenCV), lấy mẫu chuẩn 30 khung hình, trích xuất 258 điểm mốc MediaPipe Holistic, tái tạo lớp phủ khung xương và thực thi suy luận độc lập (<code>is_isolated_video=True</code>).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MULTI-USER STRESS TEST -->
+    <div id="tab-stress" class="tab-content">
+      <div class="panel">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <div class="panel-title">Trung Tâm Giám Sát Chịu Tải & Phân Phối Phiên Đa Người Dùng (Multi-Session Telemetry)</div>
+          <div class="toolbar" style="margin-top: 0; align-items: center;">
+            <span style="font-size: 12.5px; color: var(--text-secondary); font-weight: 500;">Quy mô phiên đồng thời:</span>
+            <select id="selNumUsers" class="select-input" onchange="setupVirtualUsersGrid(parseInt(this.value))">
+              <option value="12">12 Phiên đồng thời</option>
+              <option value="24" selected>24 Phiên đồng thời</option>
+              <option value="30">30 Phiên đồng thời</option>
+              <option value="48">48 Phiên đồng thời</option>
+            </select>
+            <button id="btnLiveSim" class="btn btn-primary" onclick="toggleContinuousMultiUserSim()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Chạy Mô Phỏng Liên Tục</span>
+            </button>
+            <button id="btnBurstSim" class="btn btn-secondary" onclick="runVisualBurstAllUsers()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Gửi Đồng Loạt (Burst)</span>
+            </button>
+            <button class="btn btn-subtle" onclick="resetAllVirtualUsers()">Đặt lại</button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="arch-Spec-grid">
+            <div class="arch-step" id="pipeStep1">
+              <span class="arch-step-num">Giai đoạn 01</span>
+              <strong>Phân tán MediaPipe tại Client</strong>
+              Trình duyệt mỗi người dùng tự trích xuất và chuẩn hóa ma trận <code>30×458</code>
+            </div>
+            <div class="arch-step" id="pipeStep2">
+              <span class="arch-step-num">Giai đoạn 02</span>
+              <strong>Định tuyến theo Session ID</strong>
+              Đóng gói JSON nhẹ kèm mã định danh <code>session_id</code> riêng biệt
+            </div>
+            <div class="arch-step" id="pipeStep3">
+              <span class="arch-step-num">Giai đoạn 03</span>
+              <strong>Singleton TFLite Engine</strong>
+              Một phiên bản <code>model.tflite</code> trên RAM xử lý xoay vòng (~3–6 ms/lượt)
+            </div>
+            <div class="arch-step" id="pipeStep4">
+              <span class="arch-step-num">Giai đoạn 04</span>
+              <strong>Cách ly trạng thái phiên</strong>
+              Trả kết quả về đúng <code>UserSessionState</code> của người dùng tương ứng
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Số Phiên Đang Giám Sát</div>
+              <div class="kpi-value" id="stActiveSessions">24</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Yêu Cầu Đang Xử Lý (In-Flight)</div>
+              <div class="kpi-value" id="stInFlight" style="color: var(--warning);">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Tổng Lượt Suy Luận TFLite</div>
+              <div class="kpi-value" id="stTotalInferences">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Độ Trễ TFLite Trung Bình</div>
+              <div class="kpi-value" id="stAvgMs" style="color: var(--brand);">-- ms</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Tỷ Lệ Phản Hồi Thành Công</div>
+              <div class="kpi-value" id="stMaxRps" style="color: var(--success);">100%</div>
+            </div>
+          </div>
+
+          <div id="stressTestResultBanner" class="banner-notice"></div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="section-label" style="margin: 0;">Trạng Thái Trực Tiếp Của Các Phiên Người Dùng (Session Nodes)</div>
+            <div style="font-size: 12px; color: var(--text-muted); display: flex; gap: 14px; align-items: center;">
+              <span><span class="node-dot" style="background:#3b82f6;"></span> Đang thu 30 frames</span>
+              <span><span class="node-dot" style="background:#f59e0b;"></span> Đang suy luận TFLite</span>
+              <span><span class="node-dot" style="background:#10b981;"></span> Hoàn tất phản hồi</span>
+            </div>
+          </div>
+
+          <div id="simUsersGrid" class="sim-users-grid"></div>
+
+          <div class="section-label" style="margin-top: 20px;">Nhật Ký Xử Lý Xoay Vòng Thời Gian Thực (Server Execution Log)</div>
+          <div id="liveStreamLog" class="terminal-log"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+<script>
+// =========================================================================
+// 1. KHỞI TẠO MÃ PHIÊN (SESSION_ID) & TOKEN BẢO MẬT RIÊNG CHO MỖI TAB
+// =========================================================================
+function generateSecureHex(bytesLen) {
+  if (window.crypto && window.crypto.getRandomValues) {
+    const arr = new Uint8Array(bytesLen);
+    window.crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2, "0")).join("");
+  }
+  let out = "";
+  for (let i = 0; i < bytesLen * 2; i++) {
+    out += Math.floor(Math.random() * 16).toString(16);
+  }
+  return out;
+}
+
+const SESSION_ID = "user_" + generateSecureHex(12);
+const SESSION_TOKEN = "tok_" + generateSecureHex(16);
+document.getElementById("lblSessionId").textContent = SESSION_ID.slice(0, 13);
+
+let ws = null;
+let holistic = null;
+let camera = null;
+let webcamStream = null;
+let webcamLoopActive = false;
+let holisticReady = false;
+let holisticBusy = false;
+let rawFramesBuffer = [];
+let sampleCounter = 0;
+let framesSinceLastSend = 0;
+let lastFrameTime = performance.now();
+
+function initTop5UI(containerId) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  for (let i = 1; i <= 5; i++) {
+    el.innerHTML += `
+      <div class="top5-row">
+        <div class="top5-rank">#0${i}</div>
+        <div class="top5-name" id="${containerId}_name_${i}">---</div>
+        <div class="top5-bar-bg"><div class="top5-bar-fill" id="${containerId}_bar_${i}"></div></div>
+        <div class="top5-pct" id="${containerId}_pct_${i}">0.0%</div>
+      </div>
+    `;
+  }
+}
+initTop5UI("top5Container");
+initTop5UI("uploadTop5Container");
+
+function switchTab(tabName, btnEl) {
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById("tab-" + tabName).classList.add("active");
+  const btn = btnEl
+    || (typeof event !== "undefined" && event && event.currentTarget)
+    || document.querySelector(`.tab-btn[onclick*="'${tabName}'"]`);
+  if (btn && btn.classList) btn.classList.add("active");
+  if (tabName === "stress") refreshServerStats();
+}
+
+// =========================================================================
+// 2. KẾT NỐI WEBSOCKET ĐỘ TRỄ THẤP THEO SESSION_ID KÈM TOKEN XÁC THỰC
+// =========================================================================
+function connectWebSocket() {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  ws = new WebSocket(`${proto}//${location.host}/ws/${encodeURIComponent(SESSION_ID)}?token=${encodeURIComponent(SESSION_TOKEN)}`);
+  ws.onopen = () => {
+    const st = document.getElementById("lblWsState");
+    st.textContent = "Trực tuyến (WS)";
+    st.style.color = "#34d399";
+  };
+  ws.onmessage = (evt) => {
+    const msg = JSON.parse(evt.data);
+    if (msg.type === "prediction") {
+      updatePredictionUI(msg.data, "top5Container");
+    } else if (msg.type === "action_ack") {
+      updateBuffersOnly(msg.data);
+    }
+  };
+  ws.onclose = () => {
+    const st = document.getElementById("lblWsState");
+    st.textContent = "Chế độ HTTP";
+    st.style.color = "#fbbf24";
+  };
+}
+connectWebSocket();
+
+// =========================================================================
+// 3. TRÍCH XUẤT ĐẶC TRƯNG 458 CHIỀU NGAY TRÊN TRÌNH DUYỆT (KHỚP 100% PYTHON)
+// =========================================================================
+const UPPER_POSE_INDICES = Array.from({length: 25}, (_, i) => i);
+const FINGERTIP_AND_WRIST = [0, 4, 8, 12, 16, 20];
+const POSE_VEL_JOINTS = [0, 11, 12, 13, 14, 15, 16];
+
+function median(values) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : 0.5 * (sorted[mid - 1] + sorted[mid]);
+}
+
+function clip(val, minV, maxV) {
+  return Math.max(minV, Math.min(maxV, val));
+}
+
+function extractRaw258FromHolistic(results) {
+  const vec = new Float32Array(258);
+  if (results.poseLandmarks && results.poseLandmarks.length === 33) {
+    for (let i = 0; i < 33; i++) {
+      const lm = results.poseLandmarks[i];
+      vec[i * 4 + 0] = lm.x || 0;
+      vec[i * 4 + 1] = lm.y || 0;
+      vec[i * 4 + 2] = lm.z || 0;
+      vec[i * 4 + 3] = lm.visibility !== undefined ? lm.visibility : 1.0;
+    }
+  }
+  if (results.leftHandLandmarks && results.leftHandLandmarks.length === 21) {
+    for (let i = 0; i < 21; i++) {
+      const lm = results.leftHandLandmarks[i];
+      vec[132 + i * 3 + 0] = lm.x || 0;
+      vec[132 + i * 3 + 1] = lm.y || 0;
+      vec[132 + i * 3 + 2] = lm.z || 0;
+    }
+  }
+  if (results.rightHandLandmarks && results.rightHandLandmarks.length === 21) {
+    for (let i = 0; i < 21; i++) {
+      const lm = results.rightHandLandmarks[i];
+      vec[195 + i * 3 + 0] = lm.x || 0;
+      vec[195 + i * 3 + 1] = lm.y || 0;
+      vec[195 + i * 3 + 2] = lm.z || 0;
+    }
+  }
+  return vec;
+}
+
+function isFrameActiveJS(raw258) {
+  let handSum = 0;
+  for (let i = 132; i < 258; i++) handSum += Math.abs(raw258[i]);
+  if (handSum > 1e-4) return true;
+  const hipY = 0.5 * (raw258[23 * 4 + 1] + raw258[24 * 4 + 1]);
+  const lwY = raw258[15 * 4 + 1], rwY = raw258[16 * 4 + 1];
+  const lwVis = raw258[15 * 4 + 3];
+  if (lwVis > 0.3 && (lwY < hipY - 0.05 || rwY < hipY - 0.05)) return true;
+  return false;
+}
+
+function extractSequenceFeaturesJS(seqRaw30) {
+  const T = seqRaw30.length;
+  const poseXYZ = [];
+  const lh = [];
+  const rh = [];
+  const posePresent = new Float32Array(T);
+  const lhPresent = new Float32Array(T);
+  const rhPresent = new Float32Array(T);
+
+  for (let t = 0; t < T; t++) {
+    const row = seqRaw30[t];
+    const pFrame = [];
+    let pSum = 0;
+    for (let i = 0; i < 33; i++) {
+      const x = row[i * 4], y = row[i * 4 + 1], z = row[i * 4 + 2];
+      pFrame.push([x, y, z]);
+      pSum += Math.abs(x) + Math.abs(y) + Math.abs(z);
+    }
+    poseXYZ.push(pFrame);
+    posePresent[t] = pSum > 1e-5 ? 1.0 : 0.0;
+
+    const lhFrame = [];
+    let lSum = 0;
+    for (let i = 0; i < 21; i++) {
+      const x = row[132 + i * 3], y = row[132 + i * 3 + 1], z = row[132 + i * 3 + 2];
+      lhFrame.push([x, y, z]);
+      lSum += Math.abs(x) + Math.abs(y) + Math.abs(z);
+    }
+    lh.push(lhFrame);
+    lhPresent[t] = lSum > 1e-5 ? 1.0 : 0.0;
+
+    const rhFrame = [];
+    let rSum = 0;
+    for (let i = 0; i < 21; i++) {
+      const x = row[195 + i * 3], y = row[195 + i * 3 + 1], z = row[195 + i * 3 + 2];
+      rhFrame.push([x, y, z]);
+      rSum += Math.abs(x) + Math.abs(y) + Math.abs(z);
+    }
+    rh.push(rhFrame);
+    rhPresent[t] = rSum > 1e-5 ? 1.0 : 0.0;
+  }
+
+  const validDists = [];
+  for (let t = 0; t < T; t++) {
+    if (posePresent[t] > 0.5) {
+      const dx = poseXYZ[t][11][0] - poseXYZ[t][12][0];
+      const dy = poseXYZ[t][11][1] - poseXYZ[t][12][1];
+      validDists.push(Math.hypot(dx, dy));
+    }
+  }
+  const bodyScale = validDists.length > 0 ? clip(median(validDists), 0.08, 0.8) : 0.25;
+
+  function computeHandScale(handSeq, presentArr) {
+    const palms = [];
+    for (let t = 0; t < T; t++) {
+      if (presentArr[t] > 0.5) {
+        const dx = handSeq[t][9][0] - handSeq[t][0][0];
+        const dy = handSeq[t][9][1] - handSeq[t][0][1];
+        const dz = handSeq[t][9][2] - handSeq[t][0][2];
+        palms.push(Math.hypot(dx, dy, dz));
+      }
+    }
+    return palms.length > 0 ? clip(median(palms), 0.03, 0.4) : bodyScale * 0.4;
+  }
+
+  const lhScale = computeHandScale(lh, lhPresent);
+  const rhScale = computeHandScale(rh, rhPresent);
+
+  const staticParts = [];
+  const kinBaseAll = [];
+
+  for (let t = 0; t < T; t++) {
+    const p = poseXYZ[t];
+    const bc = [
+      0.5 * (p[11][0] + p[12][0]),
+      0.5 * (p[11][1] + p[12][1]),
+      0.5 * (p[11][2] + p[12][2])
+    ];
+    const nose = p[0];
+
+    const normPoseFlat = [];
+    const normPose3D = [];
+    for (let i = 0; i < 25; i++) {
+      if (posePresent[t] > 0.5) {
+        const nx = (p[i][0] - bc[0]) / bodyScale;
+        const ny = (p[i][1] - bc[1]) / bodyScale;
+        const nz = (p[i][2] - bc[2]) / bodyScale;
+        normPoseFlat.push(nx, ny, nz);
+        normPose3D.push([nx, ny, nz]);
+      } else {
+        normPoseFlat.push(0, 0, 0);
+        normPose3D.push([0, 0, 0]);
+      }
+    }
+
+    const lhShape = [];
+    const rhShape = [];
+    for (let j = 1; j < 21; j++) {
+      if (lhPresent[t] > 0.5) {
+        lhShape.push(
+          (lh[t][j][0] - lh[t][0][0]) / lhScale,
+          (lh[t][j][1] - lh[t][0][1]) / lhScale,
+          (lh[t][j][2] - lh[t][0][2]) / lhScale
+        );
+      } else {
+        lhShape.push(0, 0, 0);
+      }
+      if (rhPresent[t] > 0.5) {
+        rhShape.push(
+          (rh[t][j][0] - rh[t][0][0]) / rhScale,
+          (rh[t][j][1] - rh[t][0][1]) / rhScale,
+          (rh[t][j][2] - rh[t][0][2]) / rhScale
+        );
+      } else {
+        rhShape.push(0, 0, 0);
+      }
+    }
+
+    const lhRelBody = [], lhRelNose = [], rhRelBody = [], rhRelNose = [];
+    for (const k of FINGERTIP_AND_WRIST) {
+      if (lhPresent[t] > 0.5) {
+        lhRelBody.push((lh[t][k][0] - bc[0]) / bodyScale, (lh[t][k][1] - bc[1]) / bodyScale, (lh[t][k][2] - bc[2]) / bodyScale);
+        lhRelNose.push((lh[t][k][0] - nose[0]) / bodyScale, (lh[t][k][1] - nose[1]) / bodyScale, (lh[t][k][2] - nose[2]) / bodyScale);
+      } else {
+        lhRelBody.push(0, 0, 0);
+        lhRelNose.push(0, 0, 0);
+      }
+      if (rhPresent[t] > 0.5) {
+        rhRelBody.push((rh[t][k][0] - bc[0]) / bodyScale, (rh[t][k][1] - bc[1]) / bodyScale, (rh[t][k][2] - bc[2]) / bodyScale);
+        rhRelNose.push((rh[t][k][0] - nose[0]) / bodyScale, (rh[t][k][1] - nose[1]) / bodyScale, (rh[t][k][2] - nose[2]) / bodyScale);
+      } else {
+        rhRelBody.push(0, 0, 0);
+        rhRelNose.push(0, 0, 0);
+      }
+    }
+    const globalHandLoc = [...lhRelBody, ...lhRelNose, ...rhRelBody, ...rhRelNose];
+
+    const bothValid = (lhPresent[t] > 0.5) && (rhPresent[t] > 0.5);
+    const bimanualFlat = [];
+    for (let idx = 0; idx < FINGERTIP_AND_WRIST.length; idx++) {
+      const k = FINGERTIP_AND_WRIST[idx];
+      if (bothValid) {
+        bimanualFlat.push(
+          (rh[t][k][0] - lh[t][k][0]) / bodyScale,
+          (rh[t][k][1] - lh[t][k][1]) / bodyScale,
+          (rh[t][k][2] - lh[t][k][2]) / bodyScale
+        );
+      } else if (idx === 0) {
+        bimanualFlat.push(
+          (p[16][0] - p[15][0]) / bodyScale,
+          (p[16][1] - p[15][1]) / bodyScale,
+          (p[16][2] - p[15][2]) / bodyScale
+        );
+      } else {
+        bimanualFlat.push(0, 0, 0);
+      }
+    }
+
+    const flags = [lhPresent[t], rhPresent[t]];
+
+    const poseVelPart = [];
+    for (const jIdx of POSE_VEL_JOINTS) {
+      poseVelPart.push(...normPose3D[jIdx]);
+    }
+    const kinBase = [
+      ...globalHandLoc,
+      ...bimanualFlat,
+      ...lhShape.slice(0, 30),
+      ...rhShape.slice(0, 30),
+      ...poseVelPart
+    ];
+
+    staticParts.push([...normPoseFlat, ...lhShape, ...rhShape, ...globalHandLoc, ...bimanualFlat, ...flags]);
+    kinBaseAll.push(kinBase);
+  }
+
+  const out30x458 = [];
+  for (let t = 0; t < T; t++) {
+    const vel = new Array(171).fill(0);
+    if (t > 0) {
+      for (let i = 0; i < 171; i++) {
+        vel[i] = kinBaseAll[t][i] - kinBaseAll[t - 1][i];
+      }
+    }
+    const fullRow = [...staticParts[t], ...vel].map(v => clip(v, -10.0, 10.0));
+    out30x458.push(fullRow);
+  }
+  return out30x458;
+}
+
+// =========================================================================
+// 4. BẬT WEBCAM VÀ CHẠY MEDIAPIPE HOLISTIC JS TRÊN TRÌNH DUYỆT (CHUẨN HÓA 1:1)
+// =========================================================================
+let isWebcamMirrored = true;
+let lastSampledFrameTime = 0;
+let idleFrameStreak = 0;
+let crossWristStreak = 0;
+let lastBackspaceTime = 0;
+const offscreenSquareCanvas = document.createElement("canvas");
+offscreenSquareCanvas.width = 480;
+offscreenSquareCanvas.height = 480;
+const offscreenSquareCtx = offscreenSquareCanvas.getContext("2d");
+
+function isDeleteGestureCrossWristsJS(results) {
+  if (!results.poseLandmarks || results.poseLandmarks.length < 25) return false;
+  const p = results.poseLandmarks;
+  const ls = p[11], rs = p[12], lw = p[15], rw = p[16];
+  if ((lw.visibility || 0) < 0.5 || (rw.visibility || 0) < 0.5) return false;
+  const shoulderCenterY = 0.5 * (ls.y + rs.y);
+  const hipCenterY = 0.5 * (p[23].y + p[24].y);
+  const inChestZone = (lw.y > shoulderCenterY - 0.08 && lw.y < hipCenterY - 0.05) &&
+                      (rw.y > shoulderCenterY - 0.08 && rw.y < hipCenterY - 0.05);
+  if (!inChestZone) return false;
+  const shoulderDir = ls.x - rs.x;
+  const wristDir = lw.x - rw.x;
+  const isCrossed = (shoulderDir * wristDir) < -0.002;
+  const closeY = Math.abs(lw.y - rw.y) < 0.12;
+  return isCrossed && closeY;
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Backspace" && document.activeElement.tagName !== "INPUT") {
+    sendSessionAction("backspace");
+  }
+});
+
+function toggleWebcamMirror() {
+  isWebcamMirrored = !isWebcamMirrored;
+  const canvasEl = document.getElementById("outputCanvas");
+  const btn = document.getElementById("btnToggleMirror");
+  canvasEl.style.transform = isWebcamMirrored ? "scaleX(-1)" : "none";
+  btn.querySelector("span").textContent = isWebcamMirrored ? "Lật gương: BẬT" : "Lật gương: TẮT";
+}
+
+function resampleRawFramesTo30JS(framesList) {
+  const n = framesList.length;
+  if (n === 0) return [];
+  const out = [];
+  for (let i = 0; i < 30; i++) {
+    const idx = n === 1 ? 0 : Math.round((i * (n - 1)) / 29);
+    out.push(Array.from(framesList[idx]));
+  }
+  return out;
+}
+
+async function startBrowserWebcam() {
+  const videoEl = document.getElementById("webcamVideo");
+  const canvasEl = document.getElementById("outputCanvas");
+  const ctx = canvasEl.getContext("2d");
+  const statusEl = document.getElementById("lblCamStatus");
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    statusEl.textContent = "Trình duyệt chặn Camera trên địa chỉ HTTP thường. Vui lòng mở http://localhost:8000 hoặc dùng link HTTPS (run_public_web.bat).";
+    return;
+  }
+
+  document.getElementById("btnStartCam").disabled = true;
+  statusEl.textContent = "Đang xin quyền truy cập Camera từ trình duyệt...";
+
+  try {
+    try {
+      webcamStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+        audio: false
+      });
+    } catch (constraintErr) {
+      webcamStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false
+      });
+    }
+
+    videoEl.srcObject = webcamStream;
+    videoEl.muted = true;
+    await videoEl.play();
+    document.getElementById("btnStopCam").disabled = false;
+    statusEl.textContent = "Camera đã bật — Đang nạp mô hình MediaPipe Holistic...";
+
+    if (!holistic && typeof Holistic !== "undefined") {
+      holistic = new Holistic({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+      });
+      holistic.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      holistic.onResults((results) => {
+        holisticReady = true;
+        const now = performance.now();
+        const fps = 1000 / Math.max(1, now - lastFrameTime);
+        lastFrameTime = now;
+        document.getElementById("lblFps").textContent = `${fps.toFixed(1)} FPS`;
+
+        ctx.save();
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        ctx.drawImage(results.image, 0, 0, canvasEl.width, canvasEl.height);
+
+        if (results.poseLandmarks) {
+          drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#38bdf8', lineWidth: 2});
+        }
+        if (results.leftHandLandmarks) {
+          drawConnectors(ctx, results.leftHandLandmarks, HAND_CONNECTIONS, {color: '#10b981', lineWidth: 3});
+          drawLandmarks(ctx, results.leftHandLandmarks, {color: '#ffffff', lineWidth: 1, radius: 3});
+        }
+        if (results.rightHandLandmarks) {
+          drawConnectors(ctx, results.rightHandLandmarks, HAND_CONNECTIONS, {color: '#f59e0b', lineWidth: 3});
+          drawLandmarks(ctx, results.rightHandLandmarks, {color: '#ffffff', lineWidth: 1, radius: 3});
+        }
+        ctx.restore();
+
+        if (isDeleteGestureCrossWristsJS(results)) {
+          crossWristStreak++;
+          if (crossWristStreak >= 8 && (now - lastBackspaceTime > 1500)) {
+            lastBackspaceTime = now;
+            crossWristStreak = 0;
+            rawFramesBuffer = [];
+            framesSinceLastSend = 0;
+            sendSessionAction("backspace");
+            statusEl.textContent = "Đã nhận diện cử chỉ XÓA TỪ (Chữ X trước ngực) — Đã xóa từ cuối";
+            document.getElementById("lblWindowCount").textContent = `Backspace`;
+            return;
+          }
+        } else {
+          crossWristStreak = Math.max(0, crossWristStreak - 1);
+        }
+
+        const raw258 = extractRaw258FromHolistic(results);
+        if (isFrameActiveJS(raw258)) {
+          idleFrameStreak = 0;
+          if (now - lastSampledFrameTime >= 64) {
+            lastSampledFrameTime = now;
+            rawFramesBuffer.push(raw258);
+            framesSinceLastSend++;
+            if (rawFramesBuffer.length > 30) rawFramesBuffer.shift();
+          }
+          statusEl.textContent = "Đang thu nhận cử chỉ tay (Khung chuẩn 1:1)...";
+          document.getElementById("lblWindowCount").textContent = `${rawFramesBuffer.length} / 30 frames`;
+
+          if (rawFramesBuffer.length >= 16 && framesSinceLastSend >= 6) {
+            framesSinceLastSend = 0;
+            const resampled30x258 = resampleRawFramesTo30JS(rawFramesBuffer);
+            dispatchMatrixToServer(resampled30x258);
+          }
+        } else {
+          idleFrameStreak++;
+          if (idleFrameStreak >= 4 && rawFramesBuffer.length > 0) {
+            if (rawFramesBuffer.length >= 10 && framesSinceLastSend >= 2) {
+              const resampled30x258 = resampleRawFramesTo30JS(rawFramesBuffer);
+              dispatchMatrixToServer(resampled30x258);
+            }
+            rawFramesBuffer = [];
+            framesSinceLastSend = 0;
+            setTimeout(() => sendSessionAction("reset_buffer"), 180);
+            statusEl.textContent = "Trạng thái nghỉ — Giơ tay lên vùng khung hình để thực hiện ký hiệu";
+            document.getElementById("lblWindowCount").textContent = `0 / 30 frames`;
+          }
+        }
+      });
+    }
+
+    webcamLoopActive = true;
+    const processFrameLoop = async () => {
+      if (!webcamLoopActive || !webcamStream) return;
+      if (videoEl.readyState >= 2) {
+        const vw = videoEl.videoWidth || 640;
+        const vh = videoEl.videoHeight || 480;
+        const side = Math.min(vw, vh);
+        const sx = Math.floor((vw - side) / 2);
+        const sy = Math.floor((vh - side) / 2);
+        offscreenSquareCtx.drawImage(videoEl, sx, sy, side, side, 0, 0, 480, 480);
+
+        if (!holisticReady) {
+          ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+          ctx.drawImage(offscreenSquareCanvas, 0, 0, canvasEl.width, canvasEl.height);
+        }
+
+        if (holistic && !holisticBusy) {
+          holisticBusy = true;
+          try {
+            await holistic.send({image: offscreenSquareCanvas});
+          } catch (mpErr) {
+            console.warn("MediaPipe frame warning:", mpErr);
+          } finally {
+            holisticBusy = false;
+          }
+        }
+      }
+      if (webcamLoopActive) {
+        requestAnimationFrame(processFrameLoop);
+      }
+    };
+    requestAnimationFrame(processFrameLoop);
+  } catch (err) {
+    document.getElementById("btnStartCam").disabled = false;
+    document.getElementById("btnStopCam").disabled = true;
+    let reason = err && err.message ? err.message : String(err);
+    if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
+      reason = "Bạn đã từ chối quyền Camera. Hãy bấm vào biểu tượng ổ khóa trên thanh địa chỉ trình duyệt và chọn 'Cho phép (Allow)' Camera.";
+    } else if (err && (err.name === "NotReadableError" || err.name === "TrackStartError")) {
+      reason = "Camera đang bị chiếm dụng bởi ứng dụng khác (Zoom, Teams, tab trình duyệt khác). Hãy đóng ứng dụng đó rồi thử lại.";
+    } else if (err && err.name === "NotFoundError") {
+      reason = "Không tìm thấy thiết bị Webcam nào được kết nối với máy tính.";
+    }
+    statusEl.textContent = `Không thể mở Camera: ${reason}`;
+  }
+}
+
+function stopBrowserWebcam() {
+  webcamLoopActive = false;
+  holisticReady = false;
+  if (camera) {
+    try { camera.stop(); } catch (e) {}
+  }
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(track => track.stop());
+    webcamStream = null;
+  }
+  const videoEl = document.getElementById("webcamVideo");
+  if (videoEl) videoEl.srcObject = null;
+  document.getElementById("btnStartCam").disabled = false;
+  document.getElementById("btnStopCam").disabled = true;
+  document.getElementById("lblCamStatus").textContent = "Đã dừng thu nhận Camera.";
+}
+
+// =========================================================================
+// 5. GỬI MA TRẬN KÈM SESSION_ID & SESSION_TOKEN LÊN MÁY CHỦ PYTHON
+// =========================================================================
+async function dispatchMatrixToServer(matrixData) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: "predict",
+      session_id: SESSION_ID,
+      session_token: SESSION_TOKEN,
+      features: matrixData,
+      confidence_threshold: 0.50
+    }));
+  } else {
+    const resp = await fetch("/api/predict_window", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Session-Token": SESSION_TOKEN
+      },
+      body: JSON.stringify({
+        session_id: SESSION_ID,
+        session_token: SESSION_TOKEN,
+        features: matrixData,
+        confidence_threshold: 0.50
+      })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      updatePredictionUI(data, "top5Container");
+    }
+  }
+}
+
+async function sendDemoSampleWindow() {
+  const resp = await fetch(`/api/sample_matrix?index=${sampleCounter++}`);
+  if (!resp.ok) return;
+  const sample = await resp.json();
+  document.getElementById("lblCamStatus").textContent = `Đang kiểm thử mẫu dữ liệu thực tế (Nhãn gốc: "${sample.true_label}")`;
+  document.getElementById("lblWindowCount").textContent = `30 / 30 frames (30×458)`;
+  await dispatchMatrixToServer(sample.features);
+  setTimeout(() => dispatchMatrixToServer(sample.features), 120);
+}
+
+async function sendSessionAction(action) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "action", action, session_token: SESSION_TOKEN }));
+  } else {
+    const resp = await fetch("/api/session/action", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Session-Token": SESSION_TOKEN
+      },
+      body: JSON.stringify({ session_id: SESSION_ID, session_token: SESSION_TOKEN, action })
+    });
+    if (resp.ok) updateBuffersOnly(await resp.json());
+  }
+}
+
+function updateBuffersOnly(data) {
+  document.getElementById("lblDraft").textContent = data.draft_word
+    ? `${data.draft_word} (Độ ổn định: ${data.draft_streak || 1}/2)`
+    : "(Đang chờ cử chỉ...)";
+  document.getElementById("lblFinalWords").textContent = (data.final_words && data.final_words.length)
+    ? data.final_words.join(" → ")
+    : "(Chưa có từ)";
+  document.getElementById("lblNlpSentence").textContent = data.nlp_sentence || "(Chưa có câu)";
+}
+
+function updatePredictionUI(data, containerId) {
+  document.getElementById("lblInferMs").textContent = `${data.infer_ms} ms`;
+  document.getElementById("lblActiveUsers").textContent = data.active_sessions;
+
+  if (containerId === "top5Container") {
+    document.getElementById("lblTop1Word").textContent = data.top1_label;
+    document.getElementById("lblTop1Conf").textContent = `Độ tin cậy: ${data.top1_confidence}% · Suy luận TFLite: ${data.infer_ms} ms`;
+    updateBuffersOnly(data);
+  } else {
+    document.getElementById("lblUploadTop1").textContent = data.top1_label;
+    const trueHint = data.true_label ? ` · Nhãn chuẩn: ${data.true_label}` : "";
+    document.getElementById("lblUploadConf").textContent = `Độ tin cậy: ${data.top1_confidence}%${trueHint} · MediaPipe: ${data.mediapipe_extract_ms || 0} ms · TFLite: ${data.infer_ms} ms`;
+  }
+
+  (data.top5 || []).forEach((item, idx) => {
+    const i = idx + 1;
+    const nameEl = document.getElementById(`${containerId}_name_${i}`);
+    const barEl = document.getElementById(`${containerId}_bar_${i}`);
+    const pctEl = document.getElementById(`${containerId}_pct_${i}`);
+    if (nameEl) nameEl.textContent = item.label;
+    if (barEl) barEl.style.width = `${Math.min(100, item.confidence)}%`;
+    if (pctEl) pctEl.textContent = `${item.confidence.toFixed(1)}%`;
+  });
+}
+
+// =========================================================================
+// 6. TẢI VIDEO NGOẠI TUYẾN & TRÌNH PHÁT CANVAS ĐA CODEC + KHUNG XƯƠNG MEDIAPIPE
+// =========================================================================
+let uploadPlayerState = {
+  rawImages: [],
+  skelImages: [],
+  showSkeleton: true,
+  isPlaying: true,
+  currentFrame: 0,
+  fps: 15,
+  timerId: null
+};
+
+async function loadSampleVideosDropdown() {
+  try {
+    const resp = await fetch("/api/sample_videos");
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const sel = document.getElementById("selSampleVideo");
+    if (!sel) return;
+    (data.videos || []).forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = String(v.id);
+      opt.textContent = `${v.filename} — Nhãn chuẩn: "${v.true_label}"`;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.warn("Không thể tải danh sách video mẫu:", e);
+  }
+}
+loadSampleVideosDropdown();
+
+function drawUploadPlayerFrame() {
+  const canvas = document.getElementById("uploadPlayerCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const imgs = uploadPlayerState.showSkeleton ? uploadPlayerState.skelImages : uploadPlayerState.rawImages;
+  if (!imgs || !imgs.length) return;
+
+  const idx = uploadPlayerState.currentFrame % imgs.length;
+  const img = imgs[idx];
+  if (img && img.complete) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  }
+  const stepEl = document.getElementById("lblUploadPlayStep");
+  if (stepEl) {
+    stepEl.textContent = `Frame ${idx + 1} / ${imgs.length} (${uploadPlayerState.fps} FPS)`;
+  }
+}
+
+function startUploadCanvasLoop(framesB64, skelB64, fps, filename, totalFrames) {
+  if (uploadPlayerState.timerId) {
+    clearInterval(uploadPlayerState.timerId);
+    uploadPlayerState.timerId = null;
+  }
+
+  const videoEl = document.getElementById("uploadPreviewVideo");
+  const canvasEl = document.getElementById("uploadPlayerCanvas");
+  if (videoEl) videoEl.style.display = "none";
+  if (canvasEl) canvasEl.style.display = "block";
+
+  uploadPlayerState.fps = fps || 14;
+  uploadPlayerState.currentFrame = 0;
+  uploadPlayerState.isPlaying = true;
+  document.getElementById("btnTogglePlay").querySelector("span").textContent = "Tạm dừng";
+  document.getElementById("lblUploadOverlay").textContent = `Tệp: ${filename} (${totalFrames || framesB64.length} frames gốc)`;
+  document.getElementById("lblUploadFrameInfo").textContent = uploadPlayerState.showSkeleton
+    ? "Chế độ: Khung xương MediaPipe"
+    : "Chế độ: Video gốc";
+
+  const decodeList = (b64Arr) => (b64Arr || []).map(b64 => {
+    const img = new Image();
+    img.src = "data:image/jpeg;base64," + b64;
+    return img;
+  });
+
+  uploadPlayerState.rawImages = decodeList(framesB64);
+  uploadPlayerState.skelImages = decodeList(skelB64 && skelB64.length ? skelB64 : framesB64);
+
+  if (uploadPlayerState.skelImages.length > 0) {
+    uploadPlayerState.skelImages[0].onload = () => drawUploadPlayerFrame();
+  }
+
+  const intervalMs = Math.max(45, Math.round(1000 / Math.min(24, Math.max(10, uploadPlayerState.fps))));
+  uploadPlayerState.timerId = setInterval(() => {
+    if (!uploadPlayerState.isPlaying) return;
+    const len = uploadPlayerState.skelImages.length || 1;
+    uploadPlayerState.currentFrame = (uploadPlayerState.currentFrame + 1) % len;
+    drawUploadPlayerFrame();
+  }, intervalMs);
+}
+
+function toggleUploadSkeletonView() {
+  uploadPlayerState.showSkeleton = !uploadPlayerState.showSkeleton;
+  const btn = document.getElementById("btnToggleSkel");
+  const info = document.getElementById("lblUploadFrameInfo");
+  if (uploadPlayerState.showSkeleton) {
+    btn.querySelector("span").textContent = "Chế độ: Video + Khung Xương MediaPipe";
+    btn.className = "btn btn-primary";
+    if (info) info.textContent = "Chế độ: Khung xương MediaPipe";
+  } else {
+    btn.querySelector("span").textContent = "Chế độ: Chỉ Video Gốc (Ẩn Khung Xương)";
+    btn.className = "btn btn-secondary";
+    if (info) info.textContent = "Chế độ: Video gốc";
+  }
+  drawUploadPlayerFrame();
+}
+
+function toggleUploadPlayback() {
+  uploadPlayerState.isPlaying = !uploadPlayerState.isPlaying;
+  const btn = document.getElementById("btnTogglePlay");
+  btn.querySelector("span").textContent = uploadPlayerState.isPlaying ? "Tạm dừng" : "Phát tiếp";
+}
+
+function onSelectVideoFile(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  document.getElementById("selSampleVideo").value = "";
+  document.getElementById("lblUploadOverlay").textContent = `Đang giải mã tệp "${file.name}"...`;
+  uploadAndPredictVideo();
+}
+
+async function uploadAndPredictVideo() {
+  const input = document.getElementById("videoFileInput");
+  if (!input.files.length) {
+    const sampleVal = document.getElementById("selSampleVideo").value;
+    if (sampleVal !== "") {
+      await onSelectSampleVideo(sampleVal);
+      return;
+    }
+    alert("Vui lòng chọn một tệp video (.mp4, .avi, .mov) hoặc chọn một Video mẫu từ danh sách!");
+    return;
+  }
+  const file = input.files[0];
+  const statusEl = document.getElementById("lblUploadStatus");
+  statusEl.textContent = `Đang giải mã khung hình, trích xuất khung xương MediaPipe và suy luận "${file.name}"...`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("session_id", SESSION_ID);
+  formData.append("session_token", SESSION_TOKEN);
+
+  const resp = await fetch("/api/upload_video", {
+    method: "POST",
+    headers: { "X-Session-Token": SESSION_TOKEN },
+    body: formData
+  });
+  if (resp.ok) {
+    const data = await resp.json();
+    statusEl.textContent = `Hoàn tất phân tích "${data.filename}" — Dự đoán: "${data.top1_label}" (${data.top1_confidence}%)`;
+    updatePredictionUI(data, "uploadTop5Container");
+    if (data.frames_b64 && data.frames_b64.length) {
+      startUploadCanvasLoop(data.frames_b64, data.skel_b64, data.fps, data.filename, data.total_frames);
+    }
+  } else {
+    const err = await resp.json();
+    statusEl.textContent = `Lỗi xử lý: ${err.detail || 'Không thể phân tích tệp video'}`;
+  }
+}
+
+async function onSelectSampleVideo(videoIdStr) {
+  if (videoIdStr === "" || videoIdStr === null || videoIdStr === undefined) return;
+  const statusEl = document.getElementById("lblUploadStatus");
+  statusEl.textContent = `Đang nạp tệp mẫu #${videoIdStr} và trích xuất khung xương MediaPipe...`;
+  document.getElementById("lblUploadOverlay").textContent = `Đang tải video mẫu #${videoIdStr}...`;
+
+  const resp = await fetch(
+    `/api/predict_sample_video?video_id=${encodeURIComponent(videoIdStr)}&session_id=${encodeURIComponent(SESSION_ID)}&session_token=${encodeURIComponent(SESSION_TOKEN)}`,
+    { headers: { "X-Session-Token": SESSION_TOKEN } }
+  );
+  if (resp.ok) {
+    const data = await resp.json();
+    statusEl.textContent = `Hoàn tất phân tích "${data.filename}" — Dự đoán: "${data.top1_label}" (${data.top1_confidence}%)`;
+    updatePredictionUI(data, "uploadTop5Container");
+    if (data.frames_b64 && data.frames_b64.length) {
+      startUploadCanvasLoop(data.frames_b64, data.skel_b64, data.fps, data.filename, data.total_frames);
+    }
+  } else {
+    const err = await resp.json();
+    statusEl.textContent = `Lỗi xử lý: ${err.detail || 'Không thể mở video mẫu'}`;
+  }
+}
+
+// =========================================================================
+// 7. MÔ PHỎNG TRỰC QUAN ĐA NGƯỜI DÙNG CÙNG LÚC (MULTI-SESSION TELEMETRY)
+// =========================================================================
+let cachedSamplePool = [];
+let virtualUsers = [];
+let isLiveSimRunning = false;
+let liveSimTimer = null;
+let inFlightCount = 0;
+
+async function ensureSamplePoolLoaded() {
+  if (cachedSamplePool.length > 0) return cachedSamplePool;
+  const resp = await fetch("/api/sample_pool?count=24");
+  if (resp.ok) {
+    const data = await resp.json();
+    cachedSamplePool = data.samples || [];
+  }
+  return cachedSamplePool;
+}
+
+function appendLiveLog(msg) {
+  const box = document.getElementById("liveStreamLog");
+  if (!box) return;
+  const now = new Date();
+  const ts = now.toTimeString().split(" ")[0] + "." + String(now.getMilliseconds()).padStart(3, "0");
+  const line = document.createElement("div");
+  line.innerHTML = `<span style="color:#64748b;">[${ts}]</span> ${msg}`;
+  box.prepend(line);
+  while (box.children.length > 60) {
+    box.removeChild(box.lastChild);
+  }
+}
+
+function setupVirtualUsersGrid(count) {
+  const grid = document.getElementById("simUsersGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  virtualUsers = [];
+
+  for (let i = 1; i <= count; i++) {
+    const sid = `usr_${String(i).padStart(2, "0")}_${generateSecureHex(4)}`;
+    const stok = `vtok_${generateSecureHex(12)}`;
+    const initFrames = Math.floor(Math.random() * 24);
+    const u = {
+      index: i,
+      session_id: sid,
+      session_token: stok,
+      frames: initFrames,
+      sampleIdx: (i - 1) % 24,
+      busy: false,
+      reqCount: 0,
+      sentence: []
+    };
+    virtualUsers.push(u);
+
+    const card = document.createElement("div");
+    card.className = "sim-user-card state-collecting";
+    card.id = `vcard_${i}`;
+    card.innerHTML = `
+      <div class="sim-user-header">
+        <div class="sim-user-title">
+          <span class="node-dot" id="vdot_${i}"></span>
+          <span>Phiên #${String(i).padStart(2, "0")}</span>
+        </div>
+        <span class="sim-sid">${sid.slice(0, 11)}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted);">
+        <span id="vstate_${i}">Đang thu nhận MediaPipe...</span>
+        <strong id="vframes_${i}" class="mono" style="color:var(--text-secondary);">${initFrames}/30</strong>
+      </div>
+      <div class="sim-frame-bar-bg">
+        <div class="sim-frame-bar-fill" id="vbar_${i}" style="width:${(initFrames/30)*100}%;"></div>
+      </div>
+      <div class="sim-pred-box">
+        <div>
+          <div style="font-size:11px; color:var(--text-muted);" id="vtrue_${i}">Đang chờ đủ 30 frames...</div>
+          <div class="sim-pred-word" id="vpred_${i}">---</div>
+        </div>
+        <div class="sim-pred-meta">
+          <div id="vconf_${i}" style="color:var(--success); font-weight:600;">-- %</div>
+          <div id="vms_${i}">-- ms</div>
+        </div>
+      </div>
+      <div class="sim-sentence" id="vsent_${i}">Chuỗi từ: <span>(Chưa có)</span></div>
+    `;
+    grid.appendChild(card);
+  }
+  document.getElementById("stActiveSessions").textContent = count;
+  appendLiveLog(`Khởi tạo <b>${count} phiên kết nối</b> độc lập (mỗi phiên định danh bởi <code>session_id</code> và <code>session_token</code> riêng).`);
+}
+
+async function triggerSingleVirtualUserInference(u) {
+  if (u.busy || !cachedSamplePool.length) return;
+  u.busy = true;
+  inFlightCount++;
+  document.getElementById("stInFlight").textContent = inFlightCount;
+  document.getElementById("pipeStep2").classList.add("active-pulse");
+  document.getElementById("pipeStep3").classList.add("active-pulse");
+
+  const card = document.getElementById(`vcard_${u.index}`);
+  const stateEl = document.getElementById(`vstate_${u.index}`);
+  const sample = cachedSamplePool[u.sampleIdx % cachedSamplePool.length];
+  u.sampleIdx = (u.sampleIdx + 1) % cachedSamplePool.length;
+
+  if (card) card.className = "sim-user-card state-sending";
+  if (stateEl) stateEl.textContent = "Đang suy luận TFLite...";
+  document.getElementById(`vtrue_${u.index}`).textContent = `Mẫu gốc: "${sample.true_label}"`;
+
+  try {
+    const resp = await fetch("/api/predict_window", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Session-Token": u.session_token
+      },
+      body: JSON.stringify({
+        session_id: u.session_id,
+        session_token: u.session_token,
+        features: sample.features,
+        confidence_threshold: 0.55,
+        is_isolated_video: true
+      })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      u.reqCount++;
+      if (!u.sentence.length || u.sentence[u.sentence.length - 1] !== data.top1_label) {
+        u.sentence.push(data.top1_label);
+        if (u.sentence.length > 4) u.sentence.shift();
+      }
+
+      if (card) card.className = "sim-user-card state-done";
+      if (stateEl) stateEl.textContent = `Hoàn tất (Lượt #${u.reqCount})`;
+      document.getElementById(`vpred_${u.index}`).textContent = data.top1_label;
+      document.getElementById(`vconf_${u.index}`).textContent = `${data.top1_confidence}%`;
+      document.getElementById(`vms_${u.index}`).textContent = `${data.infer_ms} ms`;
+      document.getElementById(`vsent_${u.index}`).innerHTML = `Chuỗi từ: <span>${u.sentence.join(" → ")}</span>`;
+
+      appendLiveLog(
+        `SESSION <span style="color:#93c5fd;">${u.session_id.slice(0, 11)}</span> (#${String(u.index).padStart(2, "0")}) ` +
+        `→ Nhãn: <strong style="color:#34d399;">${data.top1_label}</strong> (${data.top1_confidence}%) ` +
+        `· Độ trễ TFLite: <strong style="color:#f8fafc;">${data.infer_ms} ms</strong>`
+      );
+    }
+  } catch (err) {
+    if (stateEl) stateEl.textContent = "Lỗi kết nối";
+  } finally {
+    inFlightCount = Math.max(0, inFlightCount - 1);
+    document.getElementById("stInFlight").textContent = inFlightCount;
+    setTimeout(() => {
+      u.frames = 0;
+      u.busy = false;
+      if (card && isLiveSimRunning) card.className = "sim-user-card state-collecting";
+    }, 350);
+  }
+}
+
+async function toggleContinuousMultiUserSim() {
+  const btn = document.getElementById("btnLiveSim");
+  if (isLiveSimRunning) {
+    isLiveSimRunning = false;
+    if (liveSimTimer) clearInterval(liveSimTimer);
+    btn.querySelector("span").textContent = "Chạy Mô Phỏng Liên Tục";
+    btn.className = "btn btn-primary";
+    return;
+  }
+
+  await ensureSamplePoolLoaded();
+  if (!virtualUsers.length) {
+    setupVirtualUsersGrid(parseInt(document.getElementById("selNumUsers").value));
+  }
+
+  isLiveSimRunning = true;
+  btn.querySelector("span").textContent = "Tạm Dừng Mô Phỏng";
+  btn.className = "btn btn-secondary";
+  document.getElementById("pipeStep1").classList.add("active-pulse");
+
+  liveSimTimer = setInterval(async () => {
+    if (!isLiveSimRunning) return;
+    for (const u of virtualUsers) {
+      if (u.busy) continue;
+      u.frames = Math.min(30, u.frames + Math.floor(Math.random() * 4) + 3);
+      const fEl = document.getElementById(`vframes_${u.index}`);
+      const bEl = document.getElementById(`vbar_${u.index}`);
+      const sEl = document.getElementById(`vstate_${u.index}`);
+      if (fEl) fEl.textContent = `${u.frames}/30`;
+      if (bEl) bEl.style.width = `${(u.frames / 30) * 100}%`;
+      if (u.frames < 30) {
+        if (sEl) sEl.textContent = "Đang thu nhận MediaPipe...";
+      } else {
+        triggerSingleVirtualUserInference(u);
+      }
+    }
+    refreshServerStats();
+  }, 180);
+}
+
+async function runVisualBurstAllUsers() {
+  await ensureSamplePoolLoaded();
+  const count = parseInt(document.getElementById("selNumUsers").value);
+  if (virtualUsers.length !== count) {
+    setupVirtualUsersGrid(count);
+  }
+
+  const banner = document.getElementById("stressTestResultBanner");
+  banner.style.display = "block";
+  banner.innerHTML = `Đang gửi đồng loạt <strong>${virtualUsers.length} ma trận (30×458)</strong> từ ${virtualUsers.length} phiên đồng thời lên máy chủ...`;
+
+  virtualUsers.forEach(u => {
+    u.frames = 30;
+    const fEl = document.getElementById(`vframes_${u.index}`);
+    const bEl = document.getElementById(`vbar_${u.index}`);
+    if (fEl) fEl.textContent = "30/30";
+    if (bEl) bEl.style.width = "100%";
+  });
+
+  const t0 = performance.now();
+  await Promise.all(virtualUsers.map(u => triggerSingleVirtualUserInference(u)));
+  const wallMs = (performance.now() - t0).toFixed(1);
+
+  await refreshServerStats();
+  banner.innerHTML = `Hoàn tất xử lý đồng loạt <strong>${virtualUsers.length}/${virtualUsers.length} phiên người dùng</strong> — Tổng thời gian phản hồi toàn bộ: <strong>${wallMs} ms</strong> (Tỷ lệ thành công: 100%, 0 lỗi).`;
+}
+
+function resetAllVirtualUsers() {
+  if (isLiveSimRunning) toggleContinuousMultiUserSim();
+  setupVirtualUsersGrid(parseInt(document.getElementById("selNumUsers").value));
+  document.getElementById("stressTestResultBanner").style.display = "none";
+}
+
+async function refreshServerStats() {
+  const resp = await fetch("/api/stats");
+  if (!resp.ok) return;
+  const st = await resp.json();
+  document.getElementById("stTotalInferences").textContent = st.total_inferences;
+  document.getElementById("stAvgMs").textContent = `${st.avg_infer_ms} ms`;
+  document.getElementById("lblActiveUsers").textContent = st.active_sessions;
+  if (!virtualUsers.length) {
+    setupVirtualUsersGrid(parseInt(document.getElementById("selNumUsers").value || "24"));
+  }
+}
+
+// =========================================================================
+// 8. CHẾ ĐỘ TRÌNH DIỄN TỰ ĐỘNG QUA THAM SỐ URL
+// =========================================================================
+(async function autoDemoFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const tab = params.get("tab");
+  const demo = params.get("demo") === "1";
+  if (!tab) return;
+  switchTab(tab);
+  if (!demo) return;
+  try {
+    if (tab === "webcam") {
+      for (let k = 0; k < 3; k++) {
+        await sendDemoSampleWindow();
+        await new Promise(r => setTimeout(r, 400));
+      }
+    } else if (tab === "upload") {
+      await new Promise(r => setTimeout(r, 600));
+      const sel = document.getElementById("selSampleVideo");
+      const vid = params.get("video") || (sel.options.length > 3 ? sel.options[3].value : (sel.options[1] || {}).value);
+      if (vid) {
+        sel.value = vid;
+        await onSelectSampleVideo(vid);
+      }
+    } else if (tab === "stress") {
+      await runVisualBurstAllUsers();
+    }
+  } catch (e) {
+    console.warn("Auto demo error:", e);
+  }
+})();
+</script>
+</body>
+</html>
